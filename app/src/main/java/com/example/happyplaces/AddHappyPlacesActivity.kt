@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -28,7 +29,8 @@ import java.util.*
 class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
     var binding: ActivityAddHappyPlacesBinding? = null
     var cal:Calendar = Calendar.getInstance();
-    var resultLauncher: ActivityResultLauncher<Intent?>? = null
+    var galleryResultLauncher: ActivityResultLauncher<Intent?>? = null
+    var cameraResultLauncher: ActivityResultLauncher<Intent?>? = null
     lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +50,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
             cal.set(Calendar.DAY_OF_MONTH,dayOfMonth)
             updateTextView()
         }
-        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        galleryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data: Intent? = result.data
                 if(data != null) {
@@ -56,6 +58,22 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     try {
                         val selectedImageBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,contentUri)
                         binding?.ivPlaceImage?.setImageBitmap(selectedImageBitmap)
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+
+
+            }
+        }
+
+        cameraResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                if(data != null) {
+                    val thumbnail: Bitmap = data.extras!!.get("data") as Bitmap
+                    try {
+                        binding?.ivPlaceImage?.setImageBitmap(thumbnail)
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
@@ -90,12 +108,36 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                 myDialog.setItems(items) {_, which ->
                     when(which) {
                         0 -> choosePhotoFromGallery()
+                        1 -> choosePhotoFromCamera()
                     }
 
                 }
                 myDialog.show()
             }
         }
+    }
+
+    private fun choosePhotoFromCamera() {
+        Dexter.withContext(this)
+            .withPermissions(
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.CAMERA
+            ).withListener(object : MultiplePermissionsListener {
+                override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                    if(report!!.areAllPermissionsGranted()) {
+                        val photoPickerIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                        cameraResultLauncher?.launch(photoPickerIntent,)
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    permissions: List<PermissionRequest?>?,
+                    token: PermissionToken?
+                ) {
+                    showPermissionDeniedDialog()
+                }
+            }).check()
     }
 
     private fun choosePhotoFromGallery() {
@@ -108,7 +150,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     if(report!!.areAllPermissionsGranted()) {
                         val photoPickerIntent = Intent(Intent.ACTION_PICK)
                         photoPickerIntent.type = "image/*"
-                        resultLauncher?.launch(photoPickerIntent,)
+                        galleryResultLauncher?.launch(photoPickerIntent,)
                     }
                 }
 
