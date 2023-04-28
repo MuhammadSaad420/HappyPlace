@@ -1,15 +1,18 @@
 package com.example.happyplaces
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.happyplaces.databinding.ActivityAddHappyPlacesBinding
 import com.karumi.dexter.Dexter
@@ -17,6 +20,7 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,6 +28,7 @@ import java.util.*
 class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
     var binding: ActivityAddHappyPlacesBinding? = null
     var cal:Calendar = Calendar.getInstance();
+    var resultLauncher: ActivityResultLauncher<Intent?>? = null
     lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +47,22 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
             cal.set(Calendar.MONTH,month)
             cal.set(Calendar.DAY_OF_MONTH,dayOfMonth)
             updateTextView()
+        }
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                if(data != null) {
+                    val contentUri = data.data;
+                    try {
+                        val selectedImageBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,contentUri)
+                        binding?.ivPlaceImage?.setImageBitmap(selectedImageBitmap)
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+
+
+            }
         }
 
     }
@@ -85,7 +106,9 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
             ).withListener(object : MultiplePermissionsListener {
                 override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                     if(report!!.areAllPermissionsGranted()) {
-                        Toast.makeText(this@AddHappyPlacesActivity,"All permissions are granted", Toast.LENGTH_SHORT).show()
+                        val photoPickerIntent = Intent(Intent.ACTION_PICK)
+                        photoPickerIntent.type = "image/*"
+                        resultLauncher?.launch(photoPickerIntent,)
                     }
                 }
 
