@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -21,6 +23,8 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -58,6 +62,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     try {
                         val selectedImageBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,contentUri)
                         binding?.ivPlaceImage?.setImageBitmap(selectedImageBitmap)
+                        saveToInternalStorage(selectedImageBitmap)
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
@@ -74,6 +79,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     val thumbnail: Bitmap = data.extras!!.get("data") as Bitmap
                     try {
                         binding?.ivPlaceImage?.setImageBitmap(thumbnail)
+                        saveToInternalStorage(thumbnail)
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
@@ -127,7 +133,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                 override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                     if(report!!.areAllPermissionsGranted()) {
                         val photoPickerIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                        cameraResultLauncher?.launch(photoPickerIntent,)
+                        cameraResultLauncher?.launch(photoPickerIntent)
                     }
                 }
 
@@ -138,6 +144,25 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     showPermissionDeniedDialog()
                 }
             }).check()
+    }
+    private fun saveToInternalStorage(bitmapImage: Bitmap): String? {
+        val cw = ContextWrapper(applicationContext)
+        val directory: File = cw.getDir("HappyPlaces", Context.MODE_PRIVATE)
+        val mypath = File(directory, "${UUID.randomUUID()}.jpg")
+        var fos: FileOutputStream? = null
+        try {
+            fos = FileOutputStream(mypath)
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            try {
+                fos!!.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return directory.absolutePath
     }
 
     private fun choosePhotoFromGallery() {
@@ -150,7 +175,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     if(report!!.areAllPermissionsGranted()) {
                         val photoPickerIntent = Intent(Intent.ACTION_PICK)
                         photoPickerIntent.type = "image/*"
-                        galleryResultLauncher?.launch(photoPickerIntent,)
+                        galleryResultLauncher?.launch(photoPickerIntent)
                     }
                 }
 
