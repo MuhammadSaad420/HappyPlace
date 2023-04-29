@@ -167,7 +167,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     }
                     else -> {
                         var happyPlace = HappyPlaceModel(
-                            0,
+                            mHappyPlaceDetails?.id ?: 0,
                             binding?.etTitle?.text.toString(),
                             saveToInternalStorage.toString(),
                             binding?.etDescription?.text.toString(),
@@ -177,12 +177,22 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                             mLongitude
                         )
                         var dbHandler = DatabaseHandler(this)
-                        var addHappyPlace = dbHandler.addHappyPlace(happyPlace)
-                        if(addHappyPlace > 0) {
-                            Toast.makeText(this,"Place stored successfully",Toast.LENGTH_SHORT).show()
-                            setResult(Activity.RESULT_OK)
-                            finish()
+                        if(mHappyPlaceDetails != null) {
+                            var updatehappy = dbHandler.updateHappyPlace(happyPlace)
+                            if(updatehappy > 0) {
+                                Toast.makeText(this,"Place updated successfully",Toast.LENGTH_SHORT).show()
+                                setResult(Activity.RESULT_OK)
+                                finish()
+                            }
+                        } else {
+                            var addHappyPlace = dbHandler.addHappyPlace(happyPlace)
+                            if(addHappyPlace > 0) {
+                                Toast.makeText(this,"Place stored successfully",Toast.LENGTH_SHORT).show()
+                                setResult(Activity.RESULT_OK)
+                                finish()
+                            }
                         }
+
                     }
                 }
             }
