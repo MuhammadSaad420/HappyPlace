@@ -204,7 +204,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                 e.printStackTrace()
             }
         }
-        return Uri.parse(directory.absolutePath)
+        return Uri.parse(mypath.absolutePath)
     }
 
     private fun choosePhotoFromGallery() {
