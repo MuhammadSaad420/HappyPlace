@@ -10,12 +10,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.activities.AddHappyPlacesActivity
 import com.example.happyplaces.activities.MainActivity
+import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.databinding.ItemHappyPlaceBinding
 import com.example.happyplaces.models.HappyPlaceModel
 
 class HappyPlacesAdapter(
     private val context: Context,
-    private val items:List<HappyPlaceModel>,
+    private val items:ArrayList<HappyPlaceModel>,
     private val onItemClicked: (position: Int, happyPlaceModel: HappyPlaceModel) -> Unit
 ): RecyclerView.Adapter<HappyPlacesAdapter.ViewHolder>() {
 
@@ -36,6 +37,14 @@ class HappyPlacesAdapter(
         intent.putExtra(MainActivity.HAPPY_PLACE_EXTRA, items[position])
         launcher!!.launch(intent)
     notifyItemChanged(position)
+    }
+    fun removeAt(position: Int) {
+       var db = DatabaseHandler(context)
+       val success = db.deleteHappyPlace(items[position])
+        if(success > 1) {
+            notifyItemRemoved(position)
+        }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
