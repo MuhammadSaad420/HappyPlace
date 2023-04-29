@@ -8,14 +8,14 @@ import com.example.happyplaces.databinding.ItemHappyPlaceBinding
 import com.example.happyplaces.models.HappyPlaceModel
 
 class HappyPlacesAdapter(private val items:List<HappyPlaceModel>,
-//                  private val onItemDelete: (id: Int) -> Unit,
-//                  private val onItemEdit: (id: Int) -> Unit
+                 private val onItemClicked: (position: Int, happyPlaceModel: HappyPlaceModel) -> Unit
 ): RecyclerView.Adapter<HappyPlacesAdapter.ViewHolder>() {
 
     class ViewHolder(binding: ItemHappyPlaceBinding) : RecyclerView.ViewHolder(binding.root) {
         val ivImage = binding.ivPlaceImage;
         val tvTitle = binding.tvTitle;
         val tvDescription = binding.tvDescription;
+        val llm = binding.llm
 
     }
 
@@ -39,5 +39,8 @@ class HappyPlacesAdapter(private val items:List<HappyPlaceModel>,
         holder.tvTitle.text = currentItem.title;
         holder.tvDescription.text = currentItem.description;
         holder.ivImage.setImageURI(Uri.parse(currentItem.image))
+        holder.llm.setOnClickListener {
+            onItemClicked.invoke(position, currentItem)
+        }
     }
 }

@@ -56,7 +56,10 @@ class MainActivity : AppCompatActivity() {
         binding?.rvHappyPlacesList?.layoutManager = LinearLayoutManager(this)
         binding?.rvHappyPlacesList?.setHasFixedSize(true)
 
-        val placesAdapter = HappyPlacesAdapter( happyPlacesList)
+        val placesAdapter = HappyPlacesAdapter( happyPlacesList) { _, _ ->
+            val intent = Intent(this, HappyPlaceDetailActivity::class.java)
+            startActivity(intent)
+        }
         binding?.rvHappyPlacesList?.adapter = placesAdapter
     }
 }
