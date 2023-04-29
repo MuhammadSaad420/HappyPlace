@@ -30,4 +30,5 @@
     <dimen name="add_place_image_shape_radius">3dp</dimen>
 
     <dimen name="button_radius">10dp</dimen>
+    <dimen name="no_records_available_text_size">20sp</dimen>
 </resources>
