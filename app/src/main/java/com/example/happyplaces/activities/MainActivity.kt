@@ -8,11 +8,14 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.adapters.HappyPlacesAdapter
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.databinding.ActivityMainBinding
 import com.example.happyplaces.models.HappyPlaceModel
+import com.example.happyplaces.util.SwipeToEditCallback
 
 class MainActivity : AppCompatActivity() {
     var binding: ActivityMainBinding? = null;
@@ -56,12 +59,21 @@ class MainActivity : AppCompatActivity() {
         binding?.rvHappyPlacesList?.layoutManager = LinearLayoutManager(this)
         binding?.rvHappyPlacesList?.setHasFixedSize(true)
 
-        val placesAdapter = HappyPlacesAdapter( happyPlacesList) { _, happyModal ->
+
+        val placesAdapter = HappyPlacesAdapter(this, happyPlacesList, ) { _, happyModal ->
             val intent = Intent(this@MainActivity, HappyPlaceDetailActivity::class.java)
             intent.putExtra(HAPPY_PLACE_EXTRA, happyModal)
             startActivity(intent)
         }
         binding?.rvHappyPlacesList?.adapter = placesAdapter
+        val editSwipeHandler = object : SwipeToEditCallback(this) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val adapter = binding?.rvHappyPlacesList?.adapter as HappyPlacesAdapter
+                adapter.notifyEditItem(viewHolder.adapterPosition, addPlaceResultLauncher)
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(editSwipeHandler)
+        itemTouchHelper.attachToRecyclerView(binding?.rvHappyPlacesList)
     }
     companion object {
         var HAPPY_PLACE_EXTRA = "happy_place_extra"

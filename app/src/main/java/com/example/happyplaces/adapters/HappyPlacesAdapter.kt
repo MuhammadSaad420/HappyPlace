@@ -1,14 +1,22 @@
 package com.example.happyplaces.adapters
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
+import com.example.happyplaces.activities.AddHappyPlacesActivity
+import com.example.happyplaces.activities.MainActivity
 import com.example.happyplaces.databinding.ItemHappyPlaceBinding
 import com.example.happyplaces.models.HappyPlaceModel
 
-class HappyPlacesAdapter(private val items:List<HappyPlaceModel>,
-                 private val onItemClicked: (position: Int, happyPlaceModel: HappyPlaceModel) -> Unit
+class HappyPlacesAdapter(
+    private val context: Context,
+    private val items:List<HappyPlaceModel>,
+    private val onItemClicked: (position: Int, happyPlaceModel: HappyPlaceModel) -> Unit
 ): RecyclerView.Adapter<HappyPlacesAdapter.ViewHolder>() {
 
     class ViewHolder(binding: ItemHappyPlaceBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -17,6 +25,17 @@ class HappyPlacesAdapter(private val items:List<HappyPlaceModel>,
         val tvDescription = binding.tvDescription;
         val llm = binding.llm
 
+    }
+
+//    fun removeAt(position: Int) {
+//        items.
+//        notify(position)
+//    }
+    fun notifyEditItem(position: Int, launcher:ActivityResultLauncher<Intent?>?) {
+        val intent = Intent(context,AddHappyPlacesActivity:: class.java)
+        intent.putExtra(MainActivity.HAPPY_PLACE_EXTRA, items[position])
+        launcher!!.launch(intent)
+    notifyItemChanged(position)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

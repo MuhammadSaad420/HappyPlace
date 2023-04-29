@@ -43,6 +43,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
     private var saveToInternalStorage: Uri? = null
     private var mLatitude: Double = 0.0;
     private var mLongitude: Double = 0.0;
+    private var mHappyPlaceDetails: HappyPlaceModel? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddHappyPlacesBinding.inflate(layoutInflater);
@@ -52,6 +53,25 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true);
         binding?.toolbarAddPlace?.setNavigationOnClickListener {
             onBackPressed()
+        }
+        if (intent.hasExtra(MainActivity.HAPPY_PLACE_EXTRA)) {
+            mHappyPlaceDetails  = intent.getParcelableExtra<HappyPlaceModel>(MainActivity.HAPPY_PLACE_EXTRA)
+        }
+        if (mHappyPlaceDetails != null) {
+            supportActionBar?.title = "Edit Happy Place"
+
+            binding?.etTitle?.setText(mHappyPlaceDetails!!.title)
+            binding?.etDescription?.setText(mHappyPlaceDetails!!.description)
+            binding?.etDate?.setText(mHappyPlaceDetails!!.date)
+            binding?.etLocation?.setText(mHappyPlaceDetails!!.location)
+            mLatitude = mHappyPlaceDetails!!.latitude
+            mLongitude = mHappyPlaceDetails!!.longitude
+
+            saveToInternalStorage = Uri.parse(mHappyPlaceDetails!!.image)
+
+            binding?.ivPlaceImage?.setImageURI(saveToInternalStorage)
+
+            binding?.btnSave?.text = "UPDATE"
         }
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
