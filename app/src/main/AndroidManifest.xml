@@ -16,8 +16,9 @@
         android:theme="@style/Theme.HappyPlaces"
         tools:targetApi="31">
         <activity
-            android:name=".HappyPlaceDetailActivity"
-            android:exported="false" />
+            android:name=".activities.HappyPlaceDetailActivity"
+            android:exported="false"
+            android:theme="@style/CustomNoActionBarTheme"/>
         <activity
             android:name=".activities.AddHappyPlacesActivity"
             android:exported="false"

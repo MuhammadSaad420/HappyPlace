@@ -1,12 +1,35 @@
 package com.example.happyplaces.activities
 
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.happyplaces.R
+import com.example.happyplaces.databinding.ActivityAddHappyPlacesBinding
+import com.example.happyplaces.databinding.ActivityHappyPlaceDetailBinding
+import com.example.happyplaces.models.HappyPlaceModel
 
 class HappyPlaceDetailActivity : AppCompatActivity() {
+    var binding: ActivityHappyPlaceDetailBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_happy_place_detail)
+        binding = ActivityHappyPlaceDetailBinding.inflate(layoutInflater)
+
+        setContentView(binding?.root)
+
+        var happyPlaceModel: HappyPlaceModel? = null;
+
+        if(intent.hasExtra(MainActivity.HAPPY_PLACE_EXTRA)) {
+            happyPlaceModel = intent.getParcelableExtra<HappyPlaceModel>(MainActivity.HAPPY_PLACE_EXTRA)
+        }
+        if(happyPlaceModel != null) {
+            setSupportActionBar(binding?.toolbarHappyPlaceDetails)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setTitle(happyPlaceModel.title)
+            binding?.toolbarHappyPlaceDetails?.setNavigationOnClickListener {
+                onBackPressed()
+            }
+            binding?.ivPlaceImage?.setImageURI(Uri.parse(happyPlaceModel.image))
+            binding?.tvDescription?.text = happyPlaceModel.description
+        }
     }
 }
