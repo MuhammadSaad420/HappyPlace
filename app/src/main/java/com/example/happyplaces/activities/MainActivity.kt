@@ -1,9 +1,12 @@
 package com.example.happyplaces.activities
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.happyplaces.adapters.HappyPlacesAdapter
@@ -13,14 +16,22 @@ import com.example.happyplaces.models.HappyPlaceModel
 
 class MainActivity : AppCompatActivity() {
     var binding: ActivityMainBinding? = null;
+    var addPlaceResultLauncher: ActivityResultLauncher<Intent?>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater);
         setContentView(binding?.root)
+        addPlaceResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                getHappyPlacesListFromLocalDB()
+            }
+        }
         binding?.fabAddHappyPlace?.setOnClickListener {
             var intent = Intent(this, AddHappyPlacesActivity::class.java)
-            startActivity(intent);
+            addPlaceResultLauncher?.launch(intent)
         }
+
         getHappyPlacesListFromLocalDB()
     }
 

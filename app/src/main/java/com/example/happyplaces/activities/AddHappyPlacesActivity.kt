@@ -81,6 +81,8 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
 
+
+
         cameraResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data: Intent? = result.data
@@ -158,6 +160,8 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                         var addHappyPlace = dbHandler.addHappyPlace(happyPlace)
                         if(addHappyPlace > 0) {
                             Toast.makeText(this,"Place stored successfully",Toast.LENGTH_SHORT).show()
+                            setResult(Activity.RESULT_OK)
+                            finish()
                         }
                     }
                 }
