@@ -1,5 +1,6 @@
 package com.example.happyplaces.activities
 
+import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,6 +10,9 @@ import com.example.happyplaces.databinding.ActivityHappyPlaceDetailBinding
 import com.example.happyplaces.models.HappyPlaceModel
 
 class HappyPlaceDetailActivity : AppCompatActivity() {
+    companion object {
+        val HAPPY_PLACE_EXTRA_DETAL = "happyPlaceDetailExtra"
+    }
     var binding: ActivityHappyPlaceDetailBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +34,11 @@ class HappyPlaceDetailActivity : AppCompatActivity() {
             }
             binding?.ivPlaceImage?.setImageURI(Uri.parse(happyPlaceModel.image))
             binding?.tvDescription?.text = happyPlaceModel.description
+            binding?.btnViewOnMap?.setOnClickListener {
+                val intent = Intent(this,MapActivity::class.java)
+                intent.putExtra(HAPPY_PLACE_EXTRA_DETAL, happyPlaceModel)
+                startActivity(intent)
+            }
         }
     }
 }
