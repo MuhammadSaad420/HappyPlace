@@ -1,5 +1,6 @@
 package com.example.happyplaces.activities
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -8,9 +9,12 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.location.Address
+import android.location.Geocoder
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
@@ -23,6 +27,7 @@ import com.example.happyplaces.R
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.databinding.ActivityAddHappyPlacesBinding
 import com.example.happyplaces.models.HappyPlaceModel
+import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -37,9 +42,12 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var geoCoder: Geocoder;
     var binding: ActivityAddHappyPlacesBinding? = null
     var cal:Calendar = Calendar.getInstance();
     var galleryResultLauncher: ActivityResultLauncher<Intent?>? = null
@@ -59,6 +67,8 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
         binding?.toolbarAddPlace?.setNavigationOnClickListener {
             onBackPressed()
         }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        geoCoder = Geocoder(this,Locale.getDefault())
         if (intent.hasExtra(MainActivity.HAPPY_PLACE_EXTRA)) {
             mHappyPlaceDetails  = intent.getParcelableExtra<HappyPlaceModel>(MainActivity.HAPPY_PLACE_EXTRA)
         }
@@ -187,13 +197,29 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                         android.Manifest.permission.ACCESS_COARSE_LOCATION,
                         android.Manifest.permission.ACCESS_FINE_LOCATION)
                         .withListener(object: MultiplePermissionsListener {
+                            @SuppressLint("MissingPermission")
                             override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                                 if(report!!.areAllPermissionsGranted()) {
+                                    val locationRequest = LocationRequest()
+                                    locationRequest.interval = 2000
+                                    locationRequest.fastestInterval = 1000
+                                    locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                                    val locationCallBack = object : LocationCallback() {
+                                        override fun onLocationResult(locationResult: LocationResult) {
+                                           val location = locationResult.lastLocation
+                                            mLatitude = location!!.latitude
+                                            mLongitude = location!!.longitude
+
+                                        }
+                                    }
+                                    fusedLocationClient.requestLocationUpdates(locationRequest,locationCallBack,
+                                        Looper.myLooper())
                                     Toast.makeText(this@AddHappyPlacesActivity,
                                         "All permissions are granted",
                                         Toast.LENGTH_SHORT).
                                     show()
                                 }
+
                             }
 
                             override fun onPermissionRationaleShouldBeShown(
