@@ -22,6 +22,10 @@ import com.example.happyplaces.R
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.databinding.ActivityAddHappyPlacesBinding
 import com.example.happyplaces.models.HappyPlaceModel
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -73,9 +77,13 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
 
             binding?.btnSave?.text = "UPDATE"
         }
+        if(!Places.isInitialized()) {
+            Places.initialize(applicationContext,resources.getString(R.string.google_map_key))
+        }
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
         binding?.btnSave?.setOnClickListener(this)
+        binding?.etLocation?.setText("Berlin, German")
         dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
             cal.set(Calendar.YEAR,year)
             cal.set(Calendar.MONTH,month)
@@ -194,6 +202,19 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                         }
 
                     }
+                }
+            }
+            R.id.et_location -> {
+                try {
+                    val fields = listOf(
+                        Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
+                        Place.Field.ADDRESS
+                    )
+                    val intent =
+                        Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                            .build(this@AddHappyPlacesActivity)
+                } catch (e: Exception) {
+
                 }
             }
         }
