@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -83,6 +84,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
         binding?.btnSave?.setOnClickListener(this)
+        binding?.tvSelectCurrentLocation?.setOnClickListener(this)
         binding?.etLocation?.setText("Berlin, German")
         dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
             cal.set(Calendar.YEAR,year)
@@ -136,6 +138,12 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
         binding?.etDate?.setText(dateFormat.format(cal.getTime()))
     }
 
+    fun isLocationEnabled(): Boolean {
+        val locationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return  locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
     override fun onClick(v: View?) {
         Log.e("pressed", "yes")
         when(v!!.id) {
@@ -159,6 +167,47 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                 }
                 myDialog.show()
             }
+            R.id.et_location -> {
+                try {
+                    val fields = listOf(
+                        Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
+                        Place.Field.ADDRESS
+                    )
+                    val intent =
+                        Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                            .build(this@AddHappyPlacesActivity)
+                } catch (e: Exception) {
+
+                }
+            }
+            R.id.tv_select_current_location -> {
+                if(isLocationEnabled()) {
+                    Dexter.withContext(this@AddHappyPlacesActivity)
+                        .withPermissions(
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                        android.Manifest.permission.ACCESS_FINE_LOCATION)
+                        .withListener(object: MultiplePermissionsListener {
+                            override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                                if(report!!.areAllPermissionsGranted()) {
+                                    Toast.makeText(this@AddHappyPlacesActivity,
+                                        "All permissions are granted",
+                                        Toast.LENGTH_SHORT).
+                                    show()
+                                }
+                            }
+
+                            override fun onPermissionRationaleShouldBeShown(
+                                p0: MutableList<PermissionRequest>?,
+                                p1: PermissionToken?
+                            ) {
+                                showPermissionDeniedDialog()
+                            }
+
+                        }).check()
+                } else {
+                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+            }
             R.id.btn_save -> {
                 when {
                     binding?.etTitle?.text.toString().isEmpty() -> {
@@ -173,6 +222,7 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                     saveToInternalStorage == null -> {
                         Toast.makeText(this,"Please select image",Toast.LENGTH_SHORT).show()
                     }
+
                     else -> {
                         var happyPlace = HappyPlaceModel(
                             mHappyPlaceDetails?.id ?: 0,
@@ -203,20 +253,9 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
 
                     }
                 }
-            }
-            R.id.et_location -> {
-                try {
-                    val fields = listOf(
-                        Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
-                        Place.Field.ADDRESS
-                    )
-                    val intent =
-                        Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
-                            .build(this@AddHappyPlacesActivity)
-                } catch (e: Exception) {
 
-                }
             }
+
         }
     }
 
