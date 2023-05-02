@@ -209,7 +209,9 @@ class AddHappyPlacesActivity : AppCompatActivity(), View.OnClickListener {
                                            val location = locationResult.lastLocation
                                             mLatitude = location!!.latitude
                                             mLongitude = location!!.longitude
-
+                                            var addreses:ArrayList<Address> =
+                                                geoCoder.getFromLocation(mLatitude,mLongitude,1) as ArrayList<Address>
+                                            binding?.etLocation?.setText("${addreses[0].locality}, ${addreses[0].countryName}")
                                         }
                                     }
                                     fusedLocationClient.requestLocationUpdates(locationRequest,locationCallBack,
